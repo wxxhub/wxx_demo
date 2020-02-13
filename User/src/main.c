@@ -66,7 +66,7 @@ void cameraRefresh() {
 		OV7725_RRST = 1;				//��λ��ָ����� 
 		OV7725_RCK_L;
 		OV7725_RCK_H;  
-		int i;
+		int i, j;
 		uint16_t color;
 		
 		uint8_t test = 255;
@@ -81,9 +81,11 @@ void cameraRefresh() {
 			color |= GPIOC->IDR&0XFF;
 			OV7725_RCK_H;
 			
-			sendCode(rgb2gray(color));
+			//sendCode(rgb2gray(color));
+			wifiSendOneData(rgb2gray(color));
 		}
-		sendCode(end_code);
+		//sendCode(end_code);
+		wifiSendOneData(end_code);
 		ov_sta=0;					//����֡�жϱ��
 	}
 }
@@ -122,17 +124,18 @@ void ov7725Test() {
 int main() {
 	// init
 	initLED();
+	initSysTick();
 
 	initUsart1(9600);
 	USART_printf(USART1, "start test...");
+	
 	initESP8266();
 	
-	initSysTick();
 	delay_ms(500);
 	LED2_ON;
 	LED3_OFF;
 	
-	//ov7725Test();
-	test8266();
+	ov7725Test();
+	//test8266();
 	return 0;
 }

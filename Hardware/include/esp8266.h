@@ -23,6 +23,8 @@
 
 void initESP8266();
 void wifiSendData(char *str);
+void wifiSendOneData(uint8_t data);
+void wifiSendDataBylen(char *str, int len);
 bool setSATandAP();
 bool wifiCMD(char *cmd, char *reply1, char *reply2, uint16_t waittime);
 bool wifiConnect(char *ssid, char *pwd);

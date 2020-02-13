@@ -10,17 +10,9 @@ void initESP8266() {
     initUsart3(115200);
     ESP8266_RST_HIGH_LEVEL(); 	//复位引脚拉高
     ESP8266_CH_ENABLE();	//片选失效
-}
-
-void wifiSendData(char *str) {
-	while (*str != '\0') {
-		USART3->DR = *str;
-		while((USART3->SR&0X40) == 0);
-		str++;
-	}
-}
-
-void test8266(){
+	
+	delay_ms(500);
+	
 	while(!setSATandAP()) {
 		USART_printf(USART1, "setSATandAP failed!\n");
 		delay_ms(500);
@@ -49,20 +41,51 @@ void test8266(){
 		delay_ms(500);
 	}
 	
-	while(!connectServer("192.168.31.129", 5000)) {
+	while(!connectServer("192.168.31.129", 6000)) {
 		USART_printf(USART1, "connect server failed!\n");
 		delay_ms(500);
 	}
 	
 	wifiCMD("AT+CIPSEND" , 0, 0, 500);
-	
+}
+
+void wifiSendData(char *str) {
+	while (*str != '\0') {
+		USART3->DR = *str;
+		while((USART3->SR&0X40) == 0);
+		str++;
+	}
+}
+
+void wifiSendOneData(uint8_t data) {
+	USART3->DR = data;
+	while((USART3->SR&0X40) == 0);
+}
+
+void wifiSendDataBylen(char *str, int len) {
+	int i = 0;
+	for(; i < len; i++) {
+		USART3->DR = *str;
+		while((USART3->SR&0X40) == 0);
+		str++;
+	}
+}
+
+void test8266(){
+	const int data_len = 1;
+	char data[data_len];
+	int i = 0;
+	for (; i < data_len; i++) {
+		data[i] = i;
+	}
 	while (1) {
-		delay_ms(500);
+		//delay_ms(500);
 		LED2_REV;
 		LED3_REV;
     //USART_printf(USART3, "\r\nAT\r\n");
-		wifiSendData("\r\ntest\r\n");
-		delay_ms(10);
+		wifiSendDataBylen(data, data_len);
+		//USART_printf(USART1, "send data\n");
+		//delay_ms(1);
 	}
 }
 
@@ -77,17 +100,17 @@ bool setSATandAP() {
 bool wifiConnect(char *ssid, char *pwd) {
 	char cmd[120];
 	sprintf(cmd, "AT+CWJAP=\"%s\",\"%s\"", ssid, pwd);
-	return wifiCMD(cmd, "OK", 0, 10000);
+	return wifiCMD(cmd, "OK", 0, 3000);
 }
 
 bool enableMultipleID(){
-	return wifiCMD("AT+CIPMUX=0", "OK", 0, 10000);
+	return wifiCMD("AT+CIPMUX=0", "OK", 0, 100);
 }
 
 bool connectServer(char *ip, uint16_t port) {
 	char cmd[120];
 	sprintf(cmd, "AT+CIPSTART=\"TCP\",\"%s\",%d", ip, port);
-	return wifiCMD(cmd, "OK", 0, 5000);
+	return wifiCMD(cmd, "OK", 0, 3000);
 }
 
 bool enableUnvarnishSend() {
